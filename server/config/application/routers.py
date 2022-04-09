@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
 from server.config.settings import ApplicationSettings
-from server.apps.core.api.v1.endpoints import healthcheck_api_router
-from server.apps.staff.endpoints import staff_api_router
+from server.api.v1.authentication.endpoints import auth_api_router
+from server.api.v1.healthcheck.endpoints import healthcheck_api_router
+from server.api.v1.staff.endpoints import staff_api_router
 
 
 def setup_routes_v1(app_settings: "ApplicationSettings"):
@@ -10,5 +11,6 @@ def setup_routes_v1(app_settings: "ApplicationSettings"):
 
     api_router.include_router(healthcheck_api_router)
     api_router.include_router(staff_api_router)
+    api_router.include_router(auth_api_router)
 
     return api_router

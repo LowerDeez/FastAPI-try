@@ -2,14 +2,14 @@ import abc
 
 from fastapi import FastAPI
 
-from ..settings import Config
+from ..settings import Settings
 
 
 class BaseFastAPIApplicationBuilder(abc.ABC):
     app: FastAPI
 
-    def __init__(self, config: Config) -> None:
-        self._config = config
+    def __init__(self, settings: Settings) -> None:
+        self._settings = settings
 
     @abc.abstractmethod
     def configure_openapi_schema(self) -> None:

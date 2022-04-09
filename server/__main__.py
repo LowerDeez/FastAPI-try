@@ -7,7 +7,7 @@ from .config.gunicorn_app import StandaloneApplication
 
 def run_application() -> None:
     # stdlib_logconfig_dict = configure_logging(LoggingConfig())
-    app = build_app(DevelopmentApplicationBuilder(config=settings))
+    app = build_app(DevelopmentApplicationBuilder(settings=settings))
     options = {
         "bind": "%s:%s" % (settings.application.host, settings.application.port),
         "worker_class": "uvicorn.workers.UvicornWorker",

@@ -1,4 +1,5 @@
 import pathlib
+import secrets
 from typing import Any, Dict, List
 
 from dotenv import load_dotenv
@@ -70,7 +71,6 @@ class ApplicationSettings(BaseSettings):
     project_name: str = 'FastAPI'
     description: str = 'FastAPI clean architecture'
     version: str = '0.1'
-
     swagger_ui_parameters: Dict[str, Any] = {
         'displayRequestDuration': True,
         'filter': True,
@@ -84,28 +84,30 @@ class ApplicationSettings(BaseSettings):
         "Content-Length",
         "Origin",
     ]
-
     backend_cors_origins: List[AnyHttpUrl] = ["http://localhost", "http://localhost:4200", "http://localhost:3000"]
 
-    db: DatabaseSettings = DatabaseSettings()
 
-    class Config:
-        case_sensitive = False
+class SecuritySettings(BaseSettings):
+    jwt_secret_key: str = secrets.token_urlsafe(32)
+    jwt_access_token_expire_in_minutes: int = 60
+    jwt_algorithm = "HS256"
 
 
-class Config(BaseSettings):
+class Settings(BaseSettings):
     database: DatabaseSettings = DatabaseSettings()
     application: ApplicationSettings = ApplicationSettings()
+    security: SecuritySettings = SecuritySettings()
     rabbitmq: RabbitMQSettings = RabbitMQSettings()
 
     class Config:
+        case_sensitive = False
         env_file = '.env'
 
 
-def configure_initial_settings() -> Config:
+def configure_initial_settings() -> Settings:
     load_dotenv()
 
-    return Config()
+    return Settings()
 
 
 settings = configure_initial_settings()
