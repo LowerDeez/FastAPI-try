@@ -4,7 +4,7 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from server.apps.authentication.sequrity.authentication import JWTLoginService, UserIsUnauthorized
+from server.apps.authentication.sequrity.jwt.authentication import JWTLoginService, UserIsUnauthorized
 
 auth_api_router = APIRouter(prefix="/authentication", tags=["Oauth & Oauth2"])
 

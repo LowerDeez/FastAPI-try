@@ -2,7 +2,7 @@ import abc
 
 from fastapi import FastAPI
 
-from ..settings import Settings
+from server.config.settings import Settings
 
 
 class BaseFastAPIApplicationBuilder(abc.ABC):
@@ -24,22 +24,22 @@ class BaseFastAPIApplicationBuilder(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def configure_events(self) -> None:
-        pass
-
-    @abc.abstractmethod
     def configure_exception_handlers(self) -> None:
         pass
 
     @abc.abstractmethod
-    def configure_application_state(self) -> None:
+    def configure_application_dependencies(self) -> None:
+        pass
+
+    @abc.abstractmethod
+    def configure_events(self) -> None:
         pass
 
 
 def build_app(builder: BaseFastAPIApplicationBuilder) -> FastAPI:
     builder.configure_routes()
     builder.setup_middlewares()
-    builder.configure_application_state()
+    builder.configure_application_dependencies()
     builder.configure_exception_handlers()
     # We run `configure_events(...)` in the end of configure method, because we need to pass to on_shutdown and
     # on_startup handlers configured application

@@ -12,3 +12,6 @@ migrate:
 
 bash:
 	docker-compose -f docker/docker-compose.yml exec fastapi bash
+
+test:
+	docker-compose -f docker/docker-compose.yml run --rm fastapi bash -c "pytest $(test) -s"

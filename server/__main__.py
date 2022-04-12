@@ -1,7 +1,7 @@
 from .config.settings import settings
-from .config.application.builder import build_app
-from .config.application.dev import DevelopmentApplicationBuilder
-from .config.gunicorn_app import StandaloneApplication
+from server.application.builder import build_app
+from server.application.dev import DevelopmentApplicationBuilder
+from server.gunicorn_app import StandaloneApplication
 # from src.utils.logging import LoggingConfig, configure_logging
 
 

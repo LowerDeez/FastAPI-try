@@ -27,6 +27,8 @@ httpx = "^0.22.0"
 asgi-lifespan = "^1.0.1"
 PyJWT = "^2.3.0"
 python-multipart = "^0.0.5"
+pytest-asyncio = "^0.18.3"
+Authlib = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.1"

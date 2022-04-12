@@ -1,4 +1,7 @@
+from contextvars import ContextVar
+
 import contextlib
+from functools import cached_property
 import logging
 from typing import AsyncGenerator, Callable, Optional, cast, Type, Dict, Any
 from sqlalchemy import inspect, create_engine
@@ -12,7 +15,9 @@ from sqlalchemy.orm.decl_api import (
 )
 from sqlalchemy.util import ImmutableProperties
 
-from ...settings import settings
+from server.shared.di import injector
+from server.shared.dependencies.settings import Settings
+
 
 logger = logging.getLogger("sqlalchemy.execution")
 
@@ -78,14 +83,15 @@ class Base(metaclass=DeclarativeMeta):
 
 class DatabaseComponents:
     def __init__(self) -> None:
+        settings = injector.get(Settings)
         self.connection_uri = settings.database.connection_uri
-        engine = create_engine(
+        self.engine = create_engine(
             self.connection_uri.replace('+asyncpg', ''),
             pool_pre_ping=True,
             future=True,
             echo=True,
         )
-        self.session_factory = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+        self.session_factory = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self.engine))
 
     @contextlib.contextmanager
     def session(self) -> Callable[..., contextlib.AbstractContextManager[Session]]:
@@ -101,11 +107,14 @@ class DatabaseComponents:
 
 
 class AsyncDatabaseComponents:
-    def __init__(self) -> None:
-        self.connection_uri = settings.database.connection_uri
-        engine = create_async_engine(url=self.connection_uri, pool_pre_ping=True, future=True)
+    def __init__(self, connection_uri: str = None) -> None:
+        if not connection_uri:
+            settings = injector.get(Settings)
+            connection_uri = settings.database.connection_uri
+        self.connection_uri = connection_uri
+        self.engine = create_async_engine(url=self.connection_uri, pool_pre_ping=True, future=True)
         self.session: AsyncSession = sessionmaker(  # NOQA
-            engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+            self.engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
         )
 
     @contextlib.asynccontextmanager
@@ -114,6 +123,48 @@ class AsyncDatabaseComponents:
         async with self.session() as session:
             if not session.in_transaction() and session.is_active:
                 async with session.begin():
+                    token = current_session.set(session)
                     yield session
+                    current_session.reset(token)
             else:
                 yield  # type: ignore
+
+
+class AsyncDatabaseTestComponents:
+    def __init__(self, connection_uri: str = None) -> None:
+        if not connection_uri:
+            settings = injector.get(Settings)
+            connection_uri = settings.database.connection_uri
+        self.connection_uri = connection_uri
+        self.engine = create_async_engine(url=self.connection_uri, pool_pre_ping=True, future=True)
+        self.session: AsyncSession = sessionmaker(  # NOQA
+            self.engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+        )
+
+    @contextlib.asynccontextmanager
+    async def async_session(self) -> AsyncGenerator:
+        """Yield an :class:`_asyncio.AsyncSessionTransaction` object."""
+        async with self.engine.begin() as connection:
+            await connection.run_sync(Base.metadata.drop_all)
+            await connection.run_sync(Base.metadata.create_all)
+            async with self.session(bind=connection) as session:
+                # Saves current session for testing purposes, to make a few requests during one test case
+                # using session fixture we can through session to each test
+                """
+                    async with session():
+                        # print(str(test_user.email))
+                        user = await create_new_random_user()
+                        print(user)
+                        print(await get_user_by_id(user.id))
+                        print("count", await users_count())
+                        print("users", await get_users())
+                        assert 1
+                """
+                token = current_session.set(session)
+                yield session
+                await session.flush()
+                await session.rollback()
+                current_session.reset(token)
+
+
+current_session = ContextVar("current_session", default=None)

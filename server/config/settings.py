@@ -8,7 +8,7 @@ from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
 
 
-def _make_fastapi_instance_kwargs(app_settings: "ApplicationSettings") -> Dict[str, Any]:
+def make_fastapi_instance_kwargs(app_settings: "ApplicationSettings") -> Dict[str, Any]:
     return {
         "debug": app_settings.debug,
         "title": app_settings.project_name,
@@ -22,7 +22,7 @@ def _make_fastapi_instance_kwargs(app_settings: "ApplicationSettings") -> Dict[s
 class DatabaseSettings(BaseSettings):
     username: str = "postgres"
     password: str = "postgres"
-    host: str = "pg_database"
+    host: str = "localhost"
     port: int = 5432
     name: str = "db"
     dialect: str = "postgresql+asyncpg"

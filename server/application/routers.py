@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from server.config.settings import ApplicationSettings
-from server.api.v1.authentication.endpoints import auth_api_router
+from server.api.v1.authentication.endpoints.login import auth_api_router
 from server.api.v1.healthcheck.endpoints import healthcheck_api_router
 from server.api.v1.staff.endpoints import staff_api_router
 

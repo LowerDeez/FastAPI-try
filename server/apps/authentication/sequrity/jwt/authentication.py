@@ -1,4 +1,3 @@
-from copy import copy
 from dataclasses import dataclass, field as dc_field
 from datetime import datetime, timedelta
 from typing import Any, Dict, NewType
@@ -11,7 +10,7 @@ from pydantic import ValidationError
 from starlette import status
 from starlette.requests import Request
 
-from server.apps.authentication.sequrity.dto import TokenPayload
+from server.apps.authentication.sequrity.jwt.dto import TokenPayload
 from server.apps.staff.models import User
 from server.apps.staff.services import get_user_by_username, update_password_hash
 from server.config.settings import Settings

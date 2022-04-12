@@ -33,6 +33,7 @@ class DependencyProvider:
     def check_implements_protocol(self, protocol, cls):
         protocol_funcs = self.get_functions_with_signatures(protocol)
         cls_funcs = self.get_functions_with_signatures(cls)
+
         for name, sig in protocol_funcs.items():
             if name not in cls_funcs or cls_funcs[name] != sig:
                 raise DependencyInjectionError(

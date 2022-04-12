@@ -3,7 +3,7 @@ from random import randint
 import typing
 
 from server.apps.staff.models import User
-from server.shared.utils.database import Model, select_all, create, select_one, update
+from server.shared.utils.database import Model, select_all, create, select_one, update, delete, count
 from server.shared.di import injector
 from server.shared.dependencies.auth import PasswordHasher
 
@@ -59,3 +59,11 @@ async def get_user_by_id(user_id: int):
 
 async def update_password_hash(password_hash: str, user_id: int) -> None:
     await update(User, User.id == user_id, password_hash=password_hash)
+
+
+async def delete_user(user_id: int):
+    return await select_one(User, User.id == user_id)
+
+
+async def users_count() -> int:
+    return await count(User)
